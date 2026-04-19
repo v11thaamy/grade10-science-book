@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grade 10 Science — Interactive Book</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:#0f1923; --paper:#faf7f2; --cream:#f0ead8; --rule:#c8bfa8;
+    --accent:#c0392b; --accent2:#1a6b8a; --gold:#b8860b; --green:#1e6b45;
+    --purple:#6a1b9a; --orange:#e65100;
+    --sidebar-w:280px;
+    --font-disp:'Playfair Display',Georgia,serif;
+    --font-body:'Source Serif 4',Georgia,serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-body);background:var(--paper);color:var(--ink);min-height:100vh;display:flex;overflow:hidden}
+
+  #sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--ink);color:var(--paper);height:100vh;overflow-y:auto;display:flex;flex-direction:column;position:relative;z-index:10;box-shadow:4px 0 20px rgba(0,0,0,.4);transition:transform .3s ease}
+  #sidebar::-webkit-scrollbar{width:4px}
+  #sidebar::-webkit-scrollbar-thumb{background:#444;border-radius:2px}
+  .sidebar-head{padding:24px 20px 14px;border-bottom:1px solid rgba(255,255,255,.12)}
+  .sidebar-head .book-label{font-family:var(--font-mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+  .sidebar-head h1{font-family:var(--font-disp);font-size:18px;line-height:1.3;color:#fff;font-weight:700}
+  .sidebar-head .school{font-size:10px;color:rgba(255,255,255,.4);margin-top:5px;font-family:var(--font-mono)}
+  .subject-section{padding:6px 0}
+  .subject-label{font-family:var(--font-mono);font-size:9px;letter-spacing:2.5px;text-transform:uppercase;padding:6px 20px 4px;color:rgba(255,255,255,.35)}
+  .ch-btn{display:flex;align-items:center;gap:10px;padding:8px 20px;cursor:pointer;transition:background .15s;border:none;background:none;color:rgba(255,255,255,.75);font-family:var(--font-body);font-size:12.5px;text-align:left;width:100%;line-height:1.35}
+  .ch-btn:hover{background:rgba(255,255,255,.07);color:#fff}
+  .ch-btn.active{background:var(--accent);color:#fff}
+  .ch-btn .ch-num{font-family:var(--font-mono);font-size:9px;background:rgba(255,255,255,.12);border-radius:3px;padding:2px 5px;min-width:24px;text-align:center;flex-shrink:0}
+  .ch-btn.active .ch-num{background:rgba(255,255,255,.25)}
+  .subject-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-right:-4px}
+  .dot-phys{background:#4fc3f7}.dot-chem{background:#81c784}.dot-bio{background:#ce93d8}.dot-geo{background:#ffb74d}
+
+  #main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  #topbar{background:var(--paper);border-bottom:2px solid var(--rule);padding:10px 18px;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+  #search-wrap{flex:1;position:relative;min-width:180px;max-width:460px}
+  #search-input{width:100%;padding:8px 40px 8px 12px;border:1.5px solid var(--rule);border-radius:6px;font-family:var(--font-body);font-size:13px;background:var(--cream);color:var(--ink);outline:none;transition:border-color .2s}
+  #search-input:focus{border-color:var(--accent2);background:#fff}
+  #search-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:var(--accent);border:none;border-radius:4px;width:27px;height:25px;cursor:pointer;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
+  #search-btn:hover{background:#a93226}
+  .topbar-actions{display:flex;gap:5px;flex-wrap:wrap}
+  .tb-btn{font-family:var(--font-mono);font-size:10px;padding:6px 10px;border-radius:5px;border:1.5px solid var(--rule);cursor:pointer;transition:all .15s;white-space:nowrap;background:var(--cream);color:var(--ink)}
+  .tb-btn:hover{border-color:var(--accent2);color:var(--accent2);background:#fff}
+  .tb-btn.print-btn{border-color:var(--accent);color:var(--accent)}
+  .tb-btn.print-btn:hover{background:var(--accent);color:#fff}
+
+  #content-area{flex:1;overflow-y:auto;padding:26px 32px}
+  #content-area::-webkit-scrollbar{width:6px}
+  #content-area::-webkit-scrollbar-thumb{background:var(--rule);border-radius:3px}
+
+  #welcome{max-width:720px;margin:0 auto;padding-top:14px}
+  .welcome-head{font-family:var(--font-disp);font-size:38px;font-weight:900;line-height:1.15;color:var(--ink);border-bottom:3px double var(--rule);padding-bottom:13px;margin-bottom:16px}
+  .welcome-head span{color:var(--accent)}
+  .welcome-sub{font-size:14.5px;color:#555;line-height:1.7;margin-bottom:20px}
+  .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:22px}
+  .feature-card{background:var(--cream);border:1px solid var(--rule);border-radius:8px;padding:13px}
+  .feature-card .icon{font-size:19px;margin-bottom:4px}
+  .feature-card h3{font-family:var(--font-disp);font-size:12.5px;margin-bottom:3px}
+  .feature-card p{font-size:11px;color:#666;line-height:1.5}
+  .marks-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:16px}
+  .marks-table th{background:var(--ink);color:#fff;padding:7px 10px;text-align:left;font-family:var(--font-mono);font-size:9.5px;letter-spacing:1px;text-transform:uppercase}
+  .marks-table td{padding:6px 10px;border-bottom:1px solid var(--rule)}
+  .marks-table tr:nth-child(even) td{background:var(--cream)}
+
+  #chapter-content{display:none;max-width:840px;margin:0 auto}
+  .ch-header{margin-bottom:20px;padding-bottom:13px;border-bottom:3px double var(--rule)}
+  .ch-header .label{font-family:var(--font-mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+  .ch-header h2{font-family:var(--font-disp);font-size:30px;font-weight:900;line-height:1.2;color:var(--ink)}
+  .ch-header .meta{margin-top:7px;font-family:var(--font-mono);font-size:10.5px;color:#888;display:flex;gap:9px;flex-wrap:wrap}
+  .ch-header .meta span{background:var(--cream);border:1px solid var(--rule);padding:2px 8px;border-radius:4px}
+
+  .tab-bar{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--rule);flex-wrap:wrap}
+  .tab-btn{font-family:var(--font-mono);font-size:10px;padding:7px 14px;border:none;background:none;cursor:pointer;color:#888;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap}
+  .tab-btn:hover{color:var(--ink)}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+
+  #ai-output{background:#fff;border:1px solid var(--rule);border-radius:8px;padding:24px 28px;min-height:160px;line-height:1.75;font-size:14px}
+  #ai-output h1,#ai-output h2{font-family:var(--font-disp);color:var(--ink);border-bottom:2px solid var(--rule);padding-bottom:5px;margin:20px 0 9px}
+  #ai-output h1{font-size:23px}#ai-output h2{font-size:18px}
+  #ai-output h3{font-family:var(--font-disp);font-size:15px;color:var(--accent2);margin:15px 0 6px}
+  #ai-output h4{font-size:12.5px;font-weight:600;color:var(--green);margin:11px 0 5px;text-transform:uppercase;letter-spacing:.5px;font-family:var(--font-mono)}
+  #ai-output p{margin-bottom:10px}
+  #ai-output ul,#ai-output ol{padding-left:21px;margin-bottom:10px}
+  #ai-output li{margin-bottom:4px}
+  #ai-output strong{color:var(--ink);font-weight:700}
+  #ai-output em{font-style:italic;color:#555}
+  #ai-output code{font-family:var(--font-mono);font-size:11.5px;background:var(--cream);border:1px solid var(--rule);padding:1px 4px;border-radius:3px;color:var(--accent)}
+  #ai-output pre{background:var(--ink);color:#e8e0d0;padding:13px 16px;border-radius:6px;overflow-x:auto;margin:10px 0;font-family:var(--font-mono);font-size:12px;line-height:1.6}
+  #ai-output pre code{background:none;border:none;color:inherit;padding:0}
+  #ai-output blockquote{border-left:4px solid var(--accent);background:var(--cream);padding:10px 14px;margin:10px 0;font-style:italic;color:#555}
+  #ai-output table{width:100%;border-collapse:collapse;font-size:12.5px;margin:12px 0}
+  #ai-output th{background:var(--ink);color:#fff;padding:6px 10px;text-align:left;font-family:var(--font-mono);font-size:9.5px;letter-spacing:1px;text-transform:uppercase}
+  #ai-output td{padding:6px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+  #ai-output tr:nth-child(even) td{background:var(--cream)}
+  #ai-output hr{border:none;border-top:2px solid var(--rule);margin:16px 0}
+
+  #loading{display:none;text-align:center;padding:36px}
+  .spinner{display:inline-block;width:32px;height:32px;border:3px solid var(--rule);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:11px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{font-family:var(--font-mono);font-size:11px;color:#888;letter-spacing:1px}
+
+  .quick-topics{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;padding-top:16px;border-top:1px solid var(--rule)}
+  .quick-topic-btn{font-family:var(--font-mono);font-size:10px;padding:4px 10px;border:1px solid var(--rule);border-radius:4px;cursor:pointer;background:var(--cream);color:var(--ink);transition:all .15s}
+  .quick-topic-btn:hover{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+
+  /* Q&A */
+  .qa-section{margin-bottom:18px}
+  .qa-section-title{font-family:var(--font-disp);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:11px;padding:9px 15px;border-radius:6px;display:flex;align-items:center;gap:9px}
+  .qa-title-exam{background:#fff3e0;border-left:4px solid var(--orange)}
+  .qa-title-reason{background:#e8f5e9;border-left:4px solid var(--green)}
+  .qa-title-witty{background:#f3e5f5;border-left:4px solid var(--purple)}
+  .qa-item{border:1px solid var(--rule);border-radius:7px;margin-bottom:8px;overflow:hidden;background:#fff}
+  .qa-question{padding:11px 15px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:11px;transition:background .15s;font-size:13.5px;line-height:1.5}
+  .qa-question:hover{background:var(--cream)}
+  .qa-q-text{flex:1}
+  .qa-q-badge{font-family:var(--font-mono);font-size:8.5px;padding:2px 6px;border-radius:10px;flex-shrink:0;margin-top:2px;white-space:nowrap}
+  .badge-exam{background:#fff3e0;color:var(--orange)}
+  .badge-reason{background:#e8f5e9;color:var(--green)}
+  .badge-witty{background:#f3e5f5;color:var(--purple)}
+  .qa-chevron{font-size:10px;color:#aaa;flex-shrink:0;margin-top:3px;transition:transform .2s}
+  .qa-answer{display:none;padding:13px 15px;background:#fafafa;border-top:1px solid var(--rule);font-size:13px;line-height:1.7;color:#333}
+  .qa-answer.show{display:block}
+  .qa-item.open .qa-chevron{transform:rotate(90deg)}
+  .fun-fact-box{margin-top:9px;padding:7px 11px;background:#fff9e6;border-left:3px solid #f9a825;border-radius:4px;font-size:12px}
+
+  /* QUIZ */
+  .quiz-score-bar{background:var(--cream);border:1px solid var(--rule);border-radius:8px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px}
+  .quiz-score-num{font-family:var(--font-disp);font-size:26px;font-weight:900;color:var(--accent2)}
+  .quiz-score-label{font-family:var(--font-mono);font-size:9.5px;color:#888;text-transform:uppercase;letter-spacing:1px}
+  .quiz-restart{font-family:var(--font-mono);font-size:9.5px;padding:6px 13px;background:var(--accent);color:#fff;border:none;border-radius:5px;cursor:pointer}
+  .quiz-restart:hover{background:#a93226}
+  .quiz-container{background:#fff;border:1px solid var(--rule);border-radius:8px;padding:20px 24px}
+  .quiz-q{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--rule)}
+  .quiz-q:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+  .quiz-q-num{font-family:var(--font-mono);font-size:9.5px;color:var(--accent);margin-bottom:5px;letter-spacing:1px}
+  .quiz-q-text{font-size:14px;font-weight:600;margin-bottom:10px;line-height:1.5}
+  .quiz-options{display:flex;flex-direction:column;gap:6px}
+  .quiz-opt{padding:8px 13px;border:1.5px solid var(--rule);border-radius:6px;cursor:pointer;font-size:13px;transition:all .15s;background:#fff;text-align:left;width:100%}
+  .quiz-opt:hover:not(:disabled){border-color:var(--accent2);background:#f0f8ff}
+  .quiz-opt.correct{border-color:var(--green)!important;background:#e8f5e9!important;color:var(--green)!important}
+  .quiz-opt.wrong{border-color:var(--accent)!important;background:#ffebee!important;color:var(--accent)!important}
+  .quiz-opt:disabled{cursor:default}
+  .quiz-explain{display:none;margin-top:9px;padding:9px 13px;background:#e8f4fd;border-left:3px solid var(--accent2);border-radius:4px;font-size:12.5px;color:#333;line-height:1.6}
+  .quiz-explain.show{display:block}
+
+  .error-box{background:#fff5f5;border:1.5px solid #e57373;border-radius:6px;padding:12px 15px;color:#c62828;font-size:13px}
+
+  /* ── MOBILE BOTTOM NAV (phone only) ── */
+  #mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--ink);z-index:200;border-top:2px solid rgba(255,255,255,.15);padding:6px 4px 8px}
+  #mobile-nav .mnav-row{display:flex;justify-content:space-around;align-items:center}
+  .mnav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:rgba(255,255,255,.65);cursor:pointer;padding:4px 6px;border-radius:8px;transition:all .15s;min-width:52px}
+  .mnav-btn:active,.mnav-btn.active{color:#fff;background:rgba(255,255,255,.12)}
+  .mnav-btn .micon{font-size:18px;line-height:1}
+  .mnav-btn .mlabel{font-family:var(--font-mono);font-size:8px;letter-spacing:.5px;text-transform:uppercase}
+
+  #menu-toggle{display:none;background:var(--ink);color:#fff;border:none;border-radius:6px;padding:7px 10px;cursor:pointer;font-size:14px;flex-shrink:0}
+
+  /* TABLET */
+  @media(max-width:900px){
+    .topbar-actions .tb-btn{font-size:9px;padding:5px 8px}
+  }
+
+  /* MOBILE PHONE */
+  @media(max-width:600px){
+    :root{--sidebar-w:260px}
+    #sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);z-index:100}
+    #sidebar.open{transform:translateX(0)}
+    #menu-toggle{display:flex;align-items:center}
+    body{overflow:hidden}
+
+    /* Topbar: just hamburger + search */
+    #topbar{padding:8px 10px;gap:7px;flex-wrap:nowrap}
+    .topbar-actions{display:none}  /* hidden — use bottom nav instead */
+    #search-wrap{max-width:100%}
+    #search-input{font-size:13px;padding:9px 38px 9px 11px}
+
+    /* Content */
+    #content-area{padding:12px 10px;padding-bottom:80px} /* space for bottom nav */
+
+    /* Welcome page */
+    .welcome-head{font-size:28px}
+    .feature-grid{grid-template-columns:1fr 1fr;gap:8px}
+    .feature-card{padding:10px}
+    .feature-card .icon{font-size:16px}
+    .feature-card h3{font-size:11.5px}
+    .feature-card p{font-size:10px}
+
+    /* Chapter header */
+    .ch-header h2{font-size:22px}
+    .ch-header .meta{gap:6px}
+    .ch-header .meta span{font-size:9.5px;padding:2px 7px}
+
+    /* Tabs — scroll horizontally */
+    .tab-bar{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .tab-bar::-webkit-scrollbar{display:none}
+    .tab-btn{font-size:9.5px;padding:7px 11px;white-space:nowrap;flex-shrink:0}
+
+    /* Content padding */
+    #ai-output{padding:16px 14px;font-size:13.5px}
+    #ai-output h1{font-size:20px}
+    #ai-output h2{font-size:17px}
+    #ai-output h3{font-size:14px}
+    #ai-output table{font-size:11.5px;display:block;overflow-x:auto}
+
+    /* Q&A */
+    .qa-section-title{font-size:14px;padding:8px 12px}
+    .qa-question{font-size:12.5px;padding:10px 12px}
+    .qa-answer{font-size:12.5px;padding:11px 12px}
+
+    /* Quiz */
+    .quiz-container{padding:14px 12px}
+    .quiz-q-text{font-size:13px}
+    .quiz-opt{font-size:12.5px;padding:9px 11px}
+    .quiz-score-num{font-size:22px}
+
+    /* Show mobile bottom nav */
+    #mobile-nav{display:block}
+
+    /* Quick topics scroll */
+    .quick-topics{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:6px}
+    .quick-topics::-webkit-scrollbar{display:none}
+    .quick-topic-btn{flex-shrink:0;font-size:10px}
+  }
+
+  #overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+  #overlay.show{display:block}
+
+  @media print{
+    #sidebar,#topbar,#overlay,#menu-toggle,.quick-topics,.tab-bar,.topbar-actions{display:none!important}
+    body{display:block;overflow:visible;background:#fff}
+    #main{display:block;height:auto;overflow:visible}
+    #content-area{display:block;overflow:visible;padding:0}
+    #chapter-content{display:block!important;max-width:100%}
+    #welcome{display:none!important}
+    .tab-panel{display:block!important;page-break-before:always}
+    .tab-panel.active{page-break-before:avoid}
+    .qa-answer{display:block!important}
+    .quiz-explain{display:block!important}
+    .qa-item,.quiz-q{break-inside:avoid}
+    #ai-output{border:none;padding:0;box-shadow:none}
+    .ch-header{border-bottom:2px solid #000}
+    .qa-section-title,.quiz-score-bar{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    @page{margin:2cm}
+  }
+</style>
+</head>
+<body>
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<nav id="sidebar">
+  <div class="sidebar-head">
+    <div class="book-label">📚 Teacher's Reference Book</div>
+    <h1>Grade 10<br>Science</h1>
+    <div class="school">Holy Angel English School · Pokhara</div>
+  </div>
+  <div class="subject-section">
+    <div class="subject-label">⚡ Physics</div>
+    <button class="ch-btn" onclick="loadChapter(1,'Force & Motion','Physics','14',this)"><span class="subject-dot dot-phys"></span><span class="ch-num">01</span>Force & Motion</button>
+    <button class="ch-btn" onclick="loadChapter(2,'Pressure','Physics','10',this)"><span class="subject-dot dot-phys"></span><span class="ch-num">02</span>Pressure</button>
+    <button class="ch-btn" onclick="loadChapter(3,'Energy','Physics','12',this)"><span class="subject-dot dot-phys"></span><span class="ch-num">03</span>Energy</button>
+    <button class="ch-btn" onclick="loadChapter(4,'Light','Physics','10',this)"><span class="subject-dot dot-phys"></span><span class="ch-num">04</span>Light</button>
+    <button class="ch-btn" onclick="loadChapter(5,'Current Electricity & Magnetism','Physics','12',this)"><span class="subject-dot dot-phys"></span><span class="ch-num">05</span>Electricity & Magnetism</button>
+  </div>
+  <div class="subject-section">
+    <div class="subject-label">🌌 Astronomy</div>
+    <button class="ch-btn" onclick="loadChapter(6,'The Universe','Astronomy','8',this)"><span class="subject-dot dot-geo"></span><span class="ch-num">06</span>The Universe</button>
+  </div>
+  <div class="subject-section">
+    <div class="subject-label">⚗️ Chemistry</div>
+    <button class="ch-btn" onclick="loadChapter(7,'Matter — Atoms Elements & Compounds','Chemistry','8',this)"><span class="subject-dot dot-chem"></span><span class="ch-num">07</span>Matter</button>
+    <button class="ch-btn" onclick="loadChapter(8,'Chemical Reactions & Equations','Chemistry','12',this)"><span class="subject-dot dot-chem"></span><span class="ch-num">08</span>Chemical Reactions</button>
+    <button class="ch-btn" onclick="loadChapter(9,'Acids Bases & Salts','Chemistry','10',this)"><span class="subject-dot dot-chem"></span><span class="ch-num">09</span>Acids, Bases & Salts</button>
+    <button class="ch-btn" onclick="loadChapter(10,'Metals & Non-Metals','Chemistry','8',this)"><span class="subject-dot dot-chem"></span><span class="ch-num">10</span>Metals & Non-Metals</button>
+    <button class="ch-btn" onclick="loadChapter(11,'Carbon & Its Compounds','Chemistry','8',this)"><span class="subject-dot dot-chem"></span><span class="ch-num">11</span>Carbon & Its Compounds</button>
+    <button class="ch-btn" onclick="loadChapter(12,'Hydrocarbons & Biomolecules','Chemistry','7',this)"><span class="subject-dot dot-chem"></span><span class="ch-num">12</span>Biomolecules</button>
+  </div>
+  <div class="subject-section">
+    <div class="subject-label">🧬 Biology</div>
+    <button class="ch-btn" onclick="loadChapter(13,'Human Body — Life Processes','Biology','14',this)"><span class="subject-dot dot-bio"></span><span class="ch-num">13</span>Human Body</button>
+    <button class="ch-btn" onclick="loadChapter(14,'Plants — Botany','Biology','10',this)"><span class="subject-dot dot-bio"></span><span class="ch-num">14</span>Plants (Botany)</button>
+  </div>
+  <div class="subject-section">
+    <div class="subject-label">🌍 Environment & Geology</div>
+    <button class="ch-btn" onclick="loadChapter(15,'Environment & Ecosystem','Environment','8',this)"><span class="subject-dot dot-geo"></span><span class="ch-num">15</span>Environment & Ecosystem</button>
+    <button class="ch-btn" onclick="loadChapter(16,'Geology of Nepal','Geology','8',this)"><span class="subject-dot dot-geo"></span><span class="ch-num">16</span>Geology of Nepal</button>
+  </div>
+  <div style="height:20px"></div>
+</nav>
+
+<div id="main">
+  <div id="topbar">
+    <button id="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div id="search-wrap">
+      <input id="search-input" type="text" placeholder="Search anything — messy typing is fine!">
+      <button id="search-btn" onclick="doSearch()">🔍</button>
+    </div>
+    <div class="topbar-actions">
+      <button class="tb-btn" onclick="triggerTab('qa')" title="Exam Q&A with answers">📝 Q&A Bank</button>
+      <button class="tb-btn" onclick="triggerTab('reason')" title="Give Reason questions">🤔 Give Reason</button>
+      <button class="tb-btn" onclick="triggerTab('witty')" title="Fun witty questions">😄 Fun Qs</button>
+      <button class="tb-btn" onclick="triggerTab('quiz')" title="Interactive pop quiz">🎯 Pop Quiz</button>
+      <button class="tb-btn print-btn" onclick="printPage()" title="Print current content">🖨️ Print</button>
+    </div>
+  </div>
+
+  <div id="content-area">
+    <div id="welcome">
+      <div class="welcome-head">Grade 10<br><span>Science</span><br>Reference Book</div>
+      <p class="welcome-sub">Your complete AI-powered teaching reference for Holy Angel English School, Pokhara. Select any chapter from the sidebar, search any topic below, or use the toolbar buttons for Q&A, Give Reason, Fun Questions, Pop Quiz, and Printing.</p>
+      <div class="feature-grid">
+        <div class="feature-card"><div class="icon">🔍</div><h3>Smart Search</h3><p>Type anything — messy, misspelled, mixed — it understands and answers fully.</p></div>
+        <div class="feature-card"><div class="icon">📝</div><h3>Q&A Bank</h3><p>Full exam questions (1/2/4 mark + numericals) with complete model answers.</p></div>
+        <div class="feature-card"><div class="icon">🤔</div><h3>Give Reason</h3><p>"Give reason why..." questions with scientific explanations — SEE exam favourite.</p></div>
+        <div class="feature-card"><div class="icon">😄</div><h3>Fun Questions</h3><p>Witty, funny, surprising questions that make class memorable and engaging.</p></div>
+        <div class="feature-card"><div class="icon">🎯</div><h3>Pop Quiz</h3><p>10-question interactive MCQ quiz per chapter with instant scoring and explanations.</p></div>
+        <div class="feature-card"><div class="icon">🖨️</div><h3>Print Anything</h3><p>Print notes, Q&A, quiz — whatever is on screen — cleanly formatted for paper.</p></div>
+      </div>
+      <table class="marks-table">
+        <tr><th>Subject Area</th><th>Chapters</th><th>Marks (Theory)</th><th>Teaching Days</th></tr>
+        <tr><td>Physics</td><td>1–5</td><td>~25</td><td>58</td></tr>
+        <tr><td>Chemistry</td><td>7–12</td><td>~18</td><td>53</td></tr>
+        <tr><td>Biology</td><td>13–14</td><td>~22</td><td>24</td></tr>
+        <tr><td>Geology / Astro / Env</td><td>6, 15, 16</td><td>~10</td><td>24</td></tr>
+        <tr><td><strong>Total</strong></td><td></td><td><strong>75 + 25 practical</strong></td><td><strong>180 + 20 revision</strong></td></tr>
+      </table>
+      <p style="font-size:11.5px;color:#888;font-family:var(--font-mono)">👈 Select a chapter from the sidebar, or use the search bar / toolbar buttons above.</p>
+    </div>
+
+    <div id="chapter-content">
+      <div class="ch-header">
+        <div class="label" id="ch-label">Chapter 1 · Physics</div>
+        <h2 id="ch-title">Force & Motion</h2>
+        <div class="meta">
+          <span id="ch-meta-days">📅 14 Teaching Days</span>
+          <span id="ch-meta-subject">⚡ Physics</span>
+          <span>📝 SEE High Priority</span>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-btn-notes" onclick="switchTab('notes',this)">📖 Chapter Notes</button>
+        <button class="tab-btn" id="tab-btn-qa" onclick="switchTab('qa',this)">📝 Exam Q&A</button>
+        <button class="tab-btn" id="tab-btn-reason" onclick="switchTab('reason',this)">🤔 Give Reason</button>
+        <button class="tab-btn" id="tab-btn-witty" onclick="switchTab('witty',this)">😄 Fun Questions</button>
+        <button class="tab-btn" id="tab-btn-quiz" onclick="switchTab('quiz',this)">🎯 Pop Quiz</button>
+      </div>
+
+      <div class="tab-panel active" id="panel-notes">
+        <div id="loading"><div class="spinner"></div><div class="loading-text" id="loading-text">LOADING...</div></div>
+        <div id="ai-output"></div>
+        <div class="quick-topics" id="quick-topics-area"></div>
+      </div>
+
+      <div class="tab-panel" id="panel-qa">
+        <div id="qa-loading" style="display:none;text-align:center;padding:28px"><div class="spinner"></div><div class="loading-text">GENERATING EXAM QUESTIONS...</div></div>
+        <div id="qa-content"></div>
+      </div>
+
+      <div class="tab-panel" id="panel-reason">
+        <div id="reason-loading" style="display:none;text-align:center;padding:28px"><div class="spinner"></div><div class="loading-text">GENERATING GIVE REASON QUESTIONS...</div></div>
+        <div id="reason-content"></div>
+      </div>
+
+      <div class="tab-panel" id="panel-witty">
+        <div id="witty-loading" style="display:none;text-align:center;padding:28px"><div class="spinner"></div><div class="loading-text">GENERATING FUN QUESTIONS...</div></div>
+        <div id="witty-content"></div>
+      </div>
+
+      <div class="tab-panel" id="panel-quiz">
+        <div id="quiz-loading" style="display:none;text-align:center;padding:28px"><div class="spinner"></div><div class="loading-text">GENERATING POP QUIZ...</div></div>
+        <div id="quiz-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE BOTTOM NAV (phone only) -->
+<div id="mobile-nav">
+  <div class="mnav-row">
+    <button class="mnav-btn" onclick="toggleSidebar()" id="mnav-chapters">
+      <span class="micon">📚</span><span class="mlabel">Chapters</span>
+    </button>
+    <button class="mnav-btn" onclick="triggerTab('qa')" id="mnav-qa">
+      <span class="micon">📝</span><span class="mlabel">Q&A</span>
+    </button>
+    <button class="mnav-btn" onclick="triggerTab('reason')" id="mnav-reason">
+      <span class="micon">🤔</span><span class="mlabel">Reason</span>
+    </button>
+    <button class="mnav-btn" onclick="triggerTab('witty')" id="mnav-fun">
+      <span class="micon">😄</span><span class="mlabel">Fun</span>
+    </button>
+    <button class="mnav-btn" onclick="triggerTab('quiz')" id="mnav-quiz">
+      <span class="micon">🎯</span><span class="mlabel">Quiz</span>
+    </button>
+    <button class="mnav-btn" onclick="printPage()" id="mnav-print">
+      <span class="micon">🖨️</span><span class="mlabel">Print</span>
+    </button>
+  </div>
+</div>
+
+<script>
+let currentChapter=null,currentTitle=null,currentSubject=null;
+let tabLoaded={notes:false,qa:false,reason:false,witty:false,quiz:false};
+let quizAnswered=0,quizCorrect=0,quizTotal=0;
+
+// ── Markdown ─────────────────────────────────────────────────────────────
+function md(t){
+  if(!t) return '';
+  let h=t
+    .replace(/^#### (.+)$/gm,'<h4>$1</h4>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^---$/gm,'<hr>')
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/^\|(.+)\|$/gm,m=>{
+      if(m.includes('---')) return '';
+      return '<tr>'+m.slice(1,-1).split('|').map(c=>`<td>${c.trim()}</td>`).join('')+'</tr>';
+    });
+  h=h.replace(/(<tr>[\s\S]*?<\/tr>\n?)+/g,block=>{
+    const rows=block.trim().split('\n').filter(r=>r.includes('<tr>'));
+    if(!rows.length) return block;
+    const matches=rows[0].match(/<td>(.*?)<\/td>/g);
+    if(!matches) return block;
+    const hRow='<tr>'+matches.map(c=>'<th>'+c.replace(/<\/?td>/g,'')+'</th>').join('')+'</tr>';
+    return `<table>${hRow}${rows.slice(1).join('\n')}</table>`;
+  });
+  h=h.replace(/(^[*-] .+\n?)+/gm,b=>'<ul>'+b.trim().split('\n').map(l=>`<li>${l.replace(/^[*-] /,'')}</li>`).join('')+'</ul>');
+  h=h.replace(/(^\d+\. .+\n?)+/gm,b=>'<ol>'+b.trim().split('\n').map(l=>`<li>${l.replace(/^\d+\. /,'')}</li>`).join('')+'</ol>');
+  return h.split('\n\n').map(p=>{
+    p=p.trim(); if(!p) return '';
+    if(/^<(h[1-4]|ul|ol|table|blockquote|hr|pre)/.test(p)) return p;
+    return `<p>${p.replace(/\n/g,' ')}</p>`;
+  }).join('\n');
+}
+
+// ── API — calls our own backend server (works on any device, no CORS issues) ──
+async function api(prompt,sys){
+  const s=sys||'You are an expert Grade 10 Science teacher for Nepal NEB/CDC SEE exam. Write comprehensive, detailed, textbook-quality content with Nepal context. Use markdown formatting.';
+  const r=await fetch('/api/ask',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({prompt,system:s})
+  });
+  const d=await r.json();
+  if(d.error) throw new Error(d.error);
+  return d.text;
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────────
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+  if(!tabLoaded[name]){
+    tabLoaded[name]=true;
+    if(name==='qa') genQA();
+    else if(name==='reason') genReason();
+    else if(name==='witty') genWitty();
+    else if(name==='quiz') genQuiz();
+  }
+}
+
+function triggerTab(name){
+  if(!currentChapter){alert('Please select a chapter first from the sidebar.');return;}
+  switchTab(name,document.getElementById('tab-btn-'+name));
+  document.getElementById('content-area').scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── Chapter Load ─────────────────────────────────────────────────────────
+const topics={
+  1:["Newton's Laws","Equations of Motion","Momentum & Impulse","Friction","Work Power Energy"],
+  2:["Pressure Formula","Pascal's Law","Pressure in Liquids","Atmospheric Pressure","Archimedes Principle"],
+  3:["Forms of Energy","Conservation of Energy","Heat Transfer","Renewable Energy","Specific Heat Capacity"],
+  4:["Reflection","Refraction & Snell's Law","Total Internal Reflection","Mirrors","Lenses"],
+  5:["Ohm's Law","Series & Parallel Circuits","Electrical Power & Energy","Heating Effect","Magnetism"],
+  6:["Solar System","Stars & Galaxies","Light Year","Big Bang Theory","Space Exploration"],
+  7:["Atomic Structure","Elements Compounds Mixtures","Isotopes & Ions","States of Matter","Periodic Table"],
+  8:["Types of Reactions","Balancing Equations","Oxidation & Reduction","Rate of Reaction","Catalysts"],
+  9:["Acids & Bases","pH Scale","Neutralization","Strong vs Weak Acids","Salts"],
+  10:["Metals vs Non-Metals","Reactivity Series","Corrosion","Metallurgy","Alloys"],
+  11:["Allotropes of Carbon","Hydrocarbons","Alcohols & Acids","Esterification","Organic Chemistry"],
+  12:["Carbohydrates","Proteins","Lipids","DNA & RNA","Enzymes & Vitamins"],
+  13:["Digestive System","Respiratory System","Circulatory System","Excretory System","Nervous System"],
+  14:["Photosynthesis","Transpiration","Plant Tissues","Plant Reproduction","Plant Classification"],
+  15:["Ecosystem","Food Chain & Web","Energy Flow","Pollution","Conservation in Nepal"],
+  16:["Types of Rocks","Rock Cycle","Earthquakes","Nepal Geology","Minerals of Nepal"],
+};
+
+async function loadChapter(num,title,subject,days,btn){
+  currentChapter=num; currentTitle=title; currentSubject=subject;
+  tabLoaded={notes:false,qa:false,reason:false,witty:false,quiz:false};
+  quizAnswered=0; quizCorrect=0; quizTotal=0;
+
+  document.querySelectorAll('.ch-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.getElementById('welcome').style.display='none';
+  document.getElementById('chapter-content').style.display='block';
+  document.getElementById('ch-label').textContent=`Chapter ${num} · ${subject}`;
+  document.getElementById('ch-title').textContent=title;
+  document.getElementById('ch-meta-days').textContent=`📅 ${days} Teaching Days`;
+  document.getElementById('ch-meta-subject').textContent=`${emoji(subject)} ${subject}`;
+
+  // Reset all tabs to notes
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-btn-notes').classList.add('active');
+  document.getElementById('panel-notes').classList.add('active');
+  ['qa','reason','witty','quiz'].forEach(t=>{
+    document.getElementById(t+'-content').innerHTML='';
+    document.getElementById(t+'-loading').style.display='none';
+  });
+
+  // Quick topics
+  const qa=document.getElementById('quick-topics-area');
+  qa.innerHTML='<span style="font-family:var(--font-mono);font-size:9.5px;color:#999;margin-right:4px">Quick:</span>';
+  (topics[num]||[]).forEach(t=>{
+    const b=document.createElement('button');
+    b.className='quick-topic-btn'; b.textContent=t;
+    b.onclick=()=>loadTopic(num,title,t);
+    qa.appendChild(b);
+  });
+
+  tabLoaded.notes=true;
+  showLoad(true,'LOADING CHAPTER NOTES...');
+  try{
+    const r=await api(`Write a COMPLETE, DETAILED, BOOK-QUALITY chapter for Grade 10 Science Nepal NEB/CDC (SEE exam).
+Chapter ${num}: ${title} | Subject: ${subject}
+
+Cover ALL subtopics. For each: full explanation, key definitions in **bold**, formulas in code blocks, worked examples, board diagram in blockquote (> ), real-life Nepal applications.
+
+Include sections:
+## Introduction (Nepal relevance, why it matters)
+## Learning Objectives
+## [Each major subtopic as ## section — be very thorough]
+## Key Formulas & Facts Summary (table format)
+## Common Mistakes Students Make
+## Teaching Tips for the Classroom
+
+Write like a proper textbook — thorough, detailed, educational. Do not cut short.`);
+    document.getElementById('ai-output').innerHTML=md(r);
+  }catch(e){
+    document.getElementById('ai-output').innerHTML=`<div class="error-box">⚠️ ${e.message}<br>Check internet and try again.</div>`;
+  }
+  showLoad(false);
+  closeSidebar();
+}
+
+async function loadTopic(chNum,chTitle,topic){
+  switchTab('notes',document.getElementById('tab-btn-notes'));
+  showLoad(true,'LOADING TOPIC...');
+  document.getElementById('ai-output').innerHTML='';
+  try{
+    const r=await api(`Detailed explanation of "${topic}" for Grade 10 Science Nepal (Ch ${chNum}: ${chTitle}).
+Include: definition, full theory, formulas in code blocks, 2+ worked examples, board diagram in blockquote, Nepal applications, common mistakes, 5 SEE questions with answers. Be thorough.`);
+    document.getElementById('ai-output').innerHTML=md(r);
+  }catch(e){
+    document.getElementById('ai-output').innerHTML=`<div class="error-box">⚠️ ${e.message}</div>`;
+  }
+  showLoad(false);
+  document.getElementById('content-area').scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── Search ───────────────────────────────────────────────────────────────
+async function doSearch(){
+  const q=document.getElementById('search-input').value.trim();
+  if(!q) return;
+  currentChapter=null; currentTitle=q; currentSubject='Search';
+  document.getElementById('welcome').style.display='none';
+  document.getElementById('chapter-content').style.display='block';
+  document.getElementById('ch-label').textContent='🔍 Search Result';
+  document.getElementById('ch-title').textContent=q;
+  document.getElementById('ch-meta-days').textContent='AI-Powered Answer';
+  document.getElementById('ch-meta-subject').textContent='📚 Grade 10 Science';
+  document.getElementById('quick-topics-area').innerHTML='';
+  tabLoaded={notes:false,qa:false,reason:false,witty:false,quiz:false};
+  tabLoaded.notes=true;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-btn-notes').classList.add('active');
+  document.getElementById('panel-notes').classList.add('active');
+  ['qa','reason','witty','quiz'].forEach(t=>{
+    document.getElementById(t+'-content').innerHTML='';
+    document.getElementById(t+'-loading').style.display='none';
+  });
+  showLoad(true,'THINKING...');
+  try{
+    const r=await api(`You are a smart Grade 10 Science assistant for Nepal NEB/CDC SEE exam.
+Teacher typed: "${q}"
+
+The input may be messy, misspelled, mixed Nepali-English, incomplete, random words — that is fine. Understand the INTENT.
+- Numerical problem? SOLVE it step by step.
+- Topic/concept? Explain fully.
+- Badly worded question? Answer thoroughly.
+- Mix? Address all.
+NEVER say you don't understand — just figure it out and answer.
+
+Provide COMPLETE, DETAILED, BOOK-QUALITY response:
+- ## headings, formulas in code blocks, worked examples
+- Board diagrams in blockquotes, Nepal-relevant examples
+- Comparison tables, common mistakes
+- 4–5 SEE exam questions with model answers`);
+    const tm=r.match(/^#+ (.+)$/m);
+    if(tm) document.getElementById('ch-title').textContent=tm[1].replace(/[#*]/g,'').trim();
+    document.getElementById('ai-output').innerHTML=md(r);
+  }catch(e){
+    document.getElementById('ai-output').innerHTML=`<div class="error-box">⚠️ ${e.message}</div>`;
+  }
+  showLoad(false);
+  document.getElementById('content-area').scrollTo({top:0,behavior:'smooth'});
+  closeSidebar();
+}
+document.getElementById('search-input').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()});
+
+// ── Generate Q&A ─────────────────────────────────────────────────────────
+async function genQA(){
+  if(!currentChapter) return;
+  const el=document.getElementById('qa-content'),ld=document.getElementById('qa-loading');
+  ld.style.display='block'; el.innerHTML='';
+  try{
+    const r=await api(`Generate a COMPREHENSIVE Q&A bank for Chapter ${currentChapter}: "${currentTitle}" (Grade 10 Science, Nepal NEB SEE exam).
+
+Create:
+- 5 one-mark questions with answers
+- 5 two-mark questions with answers
+- 5 four-mark long-answer questions with full answers
+- 4 numerical/calculation questions with complete step-by-step solutions
+- 3 diagram-based questions with answers
+
+Format EACH question EXACTLY as:
+QUESTION: [question text]
+MARKS: [1 / 2 / 4 / numerical / diagram]
+ANSWER: [complete, detailed model answer a student can learn from]
+---
+
+Be thorough. Answers must be complete model answers.`);
+    el.innerHTML=buildQA(r,'📝 Exam Questions & Model Answers','qa-title-exam','badge-exam','exam');
+  }catch(e){ el.innerHTML=`<div class="error-box">⚠️ ${e.message}</div>`; }
+  ld.style.display='none';
+}
+
+// ── Generate Give Reason ──────────────────────────────────────────────────
+async function genReason(){
+  if(!currentChapter) return;
+  const el=document.getElementById('reason-content'),ld=document.getElementById('reason-loading');
+  ld.style.display='block'; el.innerHTML='';
+  try{
+    const r=await api(`Generate 15 "Give Reason" questions for Chapter ${currentChapter}: "${currentTitle}" (Grade 10 Science, Nepal NEB SEE exam).
+
+These are "Give reason why..." questions testing conceptual understanding — very common in SEE.
+
+Format EACH EXACTLY as:
+QUESTION: Give reason: [a scientific statement or observation that needs explaining]
+ANSWER: [clear 3-5 sentence scientific explanation with the underlying principle]
+---
+
+Make them varied and challenging. Use Nepal-relevant examples where possible.
+Examples of good give-reason statements:
+- "Diamond is hard but graphite is soft although both are made of carbon."
+- "We feel cooler near a river than in the middle of a city."
+- "Stars twinkle but planets do not."
+- "An iron nail sinks in water but a ship made of iron floats."`);
+    el.innerHTML=buildQA(r,'🤔 Give Reason Questions with Scientific Explanations','qa-title-reason','badge-reason','reason');
+  }catch(e){ el.innerHTML=`<div class="error-box">⚠️ ${e.message}</div>`; }
+  ld.style.display='none';
+}
+
+// ── Generate Witty/Fun ────────────────────────────────────────────────────
+async function genWitty(){
+  if(!currentChapter) return;
+  const el=document.getElementById('witty-content'),ld=document.getElementById('witty-loading');
+  ld.style.display='block'; el.innerHTML='';
+  try{
+    const r=await api(`Generate 12 FUN, WITTY, and ENGAGING science questions about Chapter ${currentChapter}: "${currentTitle}" for Grade 10 Nepal students.
+
+Mix of:
+- Funny scenario questions set in Nepal ("If you were climbing Everest and dropped your phone...")
+- "What if" questions that are thought-provoking
+- Real-life quirky applications (Phewa Lake, momos, dal bhat, tea, motorbikes in Pokhara...)
+- Trick questions that seem hard but have surprisingly simple science answers
+- "Did you know?" type questions with amazing science facts
+- Questions that connect to students' daily life in Nepal
+
+Format EACH EXACTLY as:
+QUESTION: [fun/witty/engaging question — make it genuinely amusing]
+ANSWER: [clear answer + interesting explanation + why the science is actually cool]
+FUN FACT: [one surprising related science fact that will blow students' minds]
+---
+
+Make students laugh AND learn. The more Nepal-specific and relatable, the better!`);
+    el.innerHTML=buildQA(r,'😄 Fun & Witty Questions — Make Science Enjoyable!','qa-title-witty','badge-witty','witty');
+  }catch(e){ el.innerHTML=`<div class="error-box">⚠️ ${e.message}</div>`; }
+  ld.style.display='none';
+}
+
+// ── Build Q&A HTML ────────────────────────────────────────────────────────
+function buildQA(raw,title,titleClass,badgeClass,type){
+  const secs=raw.split('---').filter(s=>s.trim());
+  let html=`<div class="qa-section"><div class="qa-section-title ${titleClass}">${title} <span style="font-family:var(--font-mono);font-size:9px;opacity:.6">(click to expand answers)</span></div>`;
+  secs.forEach((sec,i)=>{
+    const qM=sec.match(/QUESTION:\s*([\s\S]+?)(?=MARKS:|ANSWER:|FUN FACT:|$)/i);
+    const aM=sec.match(/ANSWER:\s*([\s\S]+?)(?=QUESTION:|FUN FACT:|---|\s*$)/i);
+    const mM=sec.match(/MARKS:\s*(.+?)(?=\n|$)/i);
+    const fM=sec.match(/FUN FACT:\s*([\s\S]+?)(?=QUESTION:|---|\s*$)/i);
+    const q=(qM?qM[1].trim():'').replace(/\n/g,' ');
+    const a=aM?aM[1].trim():'';
+    const mk=mM?mM[1].trim():'';
+    const ff=fM?fM[1].trim():'';
+    if(!q||q.length<5) return;
+    const badge=mk?`<span class="qa-q-badge ${badgeClass}">${mk}m</span>`:
+      type==='reason'?`<span class="qa-q-badge ${badgeClass}">reason</span>`:
+      type==='witty'?`<span class="qa-q-badge ${badgeClass}">fun!</span>`:'';
+    html+=`<div class="qa-item" onclick="toggleQA(this)">
+      <div class="qa-question">
+        <span class="qa-q-text">${i+1}. ${q}</span>${badge}
+        <span class="qa-chevron">▶</span>
+      </div>
+      <div class="qa-answer">
+        ${md(a)}
+        ${ff?`<div class="fun-fact-box"><strong>🌟 Fun Fact:</strong> ${ff}</div>`:''}
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  return html;
+}
+
+function toggleQA(item){
+  const ans=item.querySelector('.qa-answer');
+  const open=ans.classList.contains('show');
+  document.querySelectorAll('.qa-answer.show').forEach(a=>a.classList.remove('show'));
+  document.querySelectorAll('.qa-item.open').forEach(a=>a.classList.remove('open'));
+  if(!open){ans.classList.add('show');item.classList.add('open');}
+}
+
+// ── Generate Quiz ─────────────────────────────────────────────────────────
+async function genQuiz(){
+  if(!currentChapter) return;
+  const el=document.getElementById('quiz-content'),ld=document.getElementById('quiz-loading');
+  ld.style.display='block'; el.innerHTML='';
+  quizAnswered=0; quizCorrect=0;
+  try{
+    const r=await api(`Generate a POP QUIZ of exactly 10 multiple choice questions for Chapter ${currentChapter}: "${currentTitle}" (Grade 10 Science, Nepal NEB SEE).
+Mix easy (3), medium (4), hard (3). Cover all important topics in the chapter.
+
+Format EACH question EXACTLY like this — no deviations:
+Q: [question text]
+A: [option A]
+B: [option B]
+C: [option C]
+D: [option D]
+CORRECT: [exactly one letter: A or B or C or D]
+EXPLAIN: [1-2 sentences explaining why the answer is correct]
+###`,
+    'You generate precise, well-formatted MCQ quiz questions for Grade 10 Science Nepal. Follow the format exactly with no extra text between questions.');
+    el.innerHTML=buildQuiz(r);
+  }catch(e){ el.innerHTML=`<div class="error-box">⚠️ ${e.message}</div>`; }
+  ld.style.display='none';
+}
+
+function buildQuiz(raw){
+  const blocks=raw.split('###').filter(b=>b.trim());
+  quizTotal=blocks.length;
+  let html=`<div class="quiz-score-bar">
+    <div><div class="quiz-score-label">Your Score</div>
+    <div class="quiz-score-num" id="qscore">0 / ${quizTotal}</div></div>
+    <div><div class="quiz-score-label" id="qstatus">Answer all ${quizTotal} questions</div></div>
+    <button class="quiz-restart" onclick="genQuiz()">🔄 New Quiz</button>
+  </div><div class="quiz-container">`;
+  blocks.forEach((block,i)=>{
+    const qM=block.match(/Q:\s*([\s\S]+?)(?=A:|$)/i);
+    const aM=block.match(/^A:\s*(.+?)$/im);
+    const bM=block.match(/^B:\s*(.+?)$/im);
+    const cM=block.match(/^C:\s*(.+?)$/im);
+    const dM=block.match(/^D:\s*(.+?)$/im);
+    const cM2=block.match(/CORRECT:\s*([ABCD])/i);
+    const eM=block.match(/EXPLAIN:\s*([\s\S]+?)(?=###|\s*$)/i);
+    if(!qM||!cM2) return;
+    const q=qM[1].trim();
+    const opts={A:aM?aM[1].trim():'',B:bM?bM[1].trim():'',C:cM?cM[1].trim():'',D:dM?dM[1].trim():''};
+    const correct=cM2[1].toUpperCase();
+    const explain=eM?eM[1].trim():'';
+    html+=`<div class="quiz-q" id="qq${i}">
+      <div class="quiz-q-num">QUESTION ${i+1} OF ${quizTotal}</div>
+      <div class="quiz-q-text">${q}</div>
+      <div class="quiz-options">`;
+    ['A','B','C','D'].forEach(l=>{
+      if(!opts[l]) return;
+      html+=`<button class="quiz-opt" onclick="answerQ(this,${i},'${l}','${correct}')" data-l="${l}"><strong>${l}.</strong> ${opts[l]}</button>`;
+    });
+    html+=`</div><div class="quiz-explain" id="qe${i}">${explain}</div></div>`;
+  });
+  html+='</div>';
+  return html;
+}
+
+function answerQ(btn,qi,chosen,correct){
+  const qEl=document.getElementById('qq'+qi);
+  qEl.querySelectorAll('.quiz-opt').forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.l===correct) b.classList.add('correct');
+    else if(b.dataset.l===chosen&&chosen!==correct) b.classList.add('wrong');
+  });
+  document.getElementById('qe'+qi).classList.add('show');
+  quizAnswered++;
+  if(chosen===correct) quizCorrect++;
+  const s=document.getElementById('qscore');
+  if(s) s.textContent=`${quizCorrect} / ${quizTotal}`;
+  if(quizAnswered===quizTotal){
+    const pct=Math.round(quizCorrect/quizTotal*100);
+    const msg=pct>=80?'🎉 Excellent!':pct>=60?'👍 Good!':pct>=40?'📚 Keep studying!':'💪 Practice more!';
+    const st=document.getElementById('qstatus');
+    if(st) st.textContent=`${msg} ${pct}% (${quizCorrect}/${quizTotal})`;
+  }
+}
+
+// ── Print ─────────────────────────────────────────────────────────────────
+function printPage(){
+  // Expand everything before printing
+  document.querySelectorAll('.qa-answer').forEach(a=>a.style.display='block');
+  document.querySelectorAll('.quiz-explain').forEach(e=>e.style.display='block');
+  window.print();
+  setTimeout(()=>{
+    document.querySelectorAll('.qa-answer').forEach(a=>{a.style.display='';});
+    document.querySelectorAll('.quiz-explain').forEach(e=>{e.style.display='';});
+  },1200);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function showLoad(show,msg){
+  document.getElementById('loading').style.display=show?'block':'none';
+  document.getElementById('ai-output').style.display=show?'none':'block';
+  if(msg) document.getElementById('loading-text').textContent=msg;
+}
+function emoji(s){return{Physics:'⚡',Chemistry:'⚗️',Biology:'🧬',Astronomy:'🌌',Environment:'🌍',Geology:'🪨'}[s]||'📖'}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show')}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay').classList.remove('show')}
+</script>
+</body>
+</html>
